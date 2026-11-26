@@ -13,6 +13,9 @@ let package = Package(
         .target(
             name: "YYText",
             path: "YYText",
+            resources: [
+                .copy("PrivacyInfo.xcprivacy")
+            ],
             publicHeadersPath: "include",
             cSettings: [
                 .headerSearchPath("."),

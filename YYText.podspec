@@ -14,6 +14,7 @@ Pod::Spec.new do |s|
   s.source_files = 'YYText/**/*.{h,m}'
   s.public_header_files = 'YYText/**/*.{h}'
   s.exclude_files = 'YYText/include/**/*'
+  s.resource_bundles = { 'YYText' => ['YYText/PrivacyInfo.xcprivacy'] }
   
   s.frameworks = 'UIKit', 'CoreFoundation','CoreText', 'QuartzCore', 'Accelerate'
 
