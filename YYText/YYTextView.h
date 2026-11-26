@@ -410,16 +410,16 @@ IB_DESIGNABLE
 @property (nullable, nonatomic, weak) id<YYTextViewDelegate> delegate;
 @property (nullable, nonatomic, strong) UIFont *font;
 @property (nonatomic) UIDataDetectorTypes dataDetectorTypes;
-@property (nullable, nonatomic, copy) NSDictionary *linkTextAttributes;
-@property (nullable, nonatomic, copy) NSDictionary *highlightTextAttributes;
-@property (nullable, nonatomic, copy) NSDictionary *typingAttributes;
+@property (nullable, nonatomic, copy) NSDictionary<NSString *, id> *linkTextAttributes;
+@property (nullable, nonatomic, copy) NSDictionary<NSString *, id> *highlightTextAttributes;
+@property (nullable, nonatomic, copy) NSDictionary<NSString *, id> *typingAttributes;
 @property (nullable, nonatomic, copy) NSAttributedString *attributedText;
 @property (nullable, nonatomic, strong) id<YYTextParser> textParser;
 @property (nullable, nonatomic, strong, readonly) YYTextLayout *textLayout;
 @property (nullable, nonatomic, strong) UIFont *placeholderFont;
 @property (nullable, nonatomic, copy) NSAttributedString *placeholderAttributedText;
 @property (nonatomic) UIEdgeInsets textContainerInset;
-@property (nullable, nonatomic, copy) NSArray *exclusionPaths;
+@property (nullable, nonatomic, copy) NSArray<UIBezierPath *> *exclusionPaths;
 @property (nullable, nonatomic, copy) id<YYTextLinePositionModifier> linePositionModifier;
 @property (nullable, nonatomic, copy) YYTextDebugOption *debugOption;
 - (void)scrollRangeToVisible:(NSRange)range;
@@ -432,8 +432,8 @@ IB_DESIGNABLE
 
 
 // Notifications, see UITextView's documentation for more information.
-UIKIT_EXTERN NSString *const YYTextViewTextDidBeginEditingNotification;
-UIKIT_EXTERN NSString *const YYTextViewTextDidChangeNotification;
-UIKIT_EXTERN NSString *const YYTextViewTextDidEndEditingNotification;
+UIKIT_EXTERN NSNotificationName const YYTextViewTextDidBeginEditingNotification NS_SWIFT_NAME(YYTextView.textDidBeginEditingNotification);
+UIKIT_EXTERN NSNotificationName const YYTextViewTextDidChangeNotification NS_SWIFT_NAME(YYTextView.textDidChangeNotification);
+UIKIT_EXTERN NSNotificationName const YYTextViewTextDidEndEditingNotification NS_SWIFT_NAME(YYTextView.textDidEndEditingNotification);
 
 NS_ASSUME_NONNULL_END

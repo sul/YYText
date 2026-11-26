@@ -17,18 +17,18 @@
 
 
 
-NSString *const YYTextBackedStringAttributeName = @"YYTextBackedString";
-NSString *const YYTextBindingAttributeName = @"YYTextBinding";
-NSString *const YYTextShadowAttributeName = @"YYTextShadow";
-NSString *const YYTextInnerShadowAttributeName = @"YYTextInnerShadow";
-NSString *const YYTextUnderlineAttributeName = @"YYTextUnderline";
-NSString *const YYTextStrikethroughAttributeName = @"YYTextStrikethrough";
-NSString *const YYTextBorderAttributeName = @"YYTextBorder";
-NSString *const YYTextBackgroundBorderAttributeName = @"YYTextBackgroundBorder";
-NSString *const YYTextBlockBorderAttributeName = @"YYTextBlockBorder";
-NSString *const YYTextAttachmentAttributeName = @"YYTextAttachment";
-NSString *const YYTextHighlightAttributeName = @"YYTextHighlight";
-NSString *const YYTextGlyphTransformAttributeName = @"YYTextGlyphTransform";
+NSAttributedStringKey const YYTextBackedStringAttributeName = @"YYTextBackedString";
+NSAttributedStringKey const YYTextBindingAttributeName = @"YYTextBinding";
+NSAttributedStringKey const YYTextShadowAttributeName = @"YYTextShadow";
+NSAttributedStringKey const YYTextInnerShadowAttributeName = @"YYTextInnerShadow";
+NSAttributedStringKey const YYTextUnderlineAttributeName = @"YYTextUnderline";
+NSAttributedStringKey const YYTextStrikethroughAttributeName = @"YYTextStrikethrough";
+NSAttributedStringKey const YYTextBorderAttributeName = @"YYTextBorder";
+NSAttributedStringKey const YYTextBackgroundBorderAttributeName = @"YYTextBackgroundBorder";
+NSAttributedStringKey const YYTextBlockBorderAttributeName = @"YYTextBlockBorder";
+NSAttributedStringKey const YYTextAttachmentAttributeName = @"YYTextAttachment";
+NSAttributedStringKey const YYTextHighlightAttributeName = @"YYTextHighlight";
+NSAttributedStringKey const YYTextGlyphTransformAttributeName = @"YYTextGlyphTransform";
 
 NSString *const YYTextAttachmentToken = @"\uFFFC";
 NSString *const YYTextTruncationToken = @"\u2026";

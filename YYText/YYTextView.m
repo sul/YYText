@@ -42,9 +42,9 @@
 #define kDefaultVerticalInset UIEdgeInsetsMake(4, 6, 4, 6)
 
 
-NSString *const YYTextViewTextDidBeginEditingNotification = @"YYTextViewTextDidBeginEditing";
-NSString *const YYTextViewTextDidChangeNotification = @"YYTextViewTextDidChange";
-NSString *const YYTextViewTextDidEndEditingNotification = @"YYTextViewTextDidEndEditing";
+NSNotificationName const YYTextViewTextDidBeginEditingNotification = @"YYTextViewTextDidBeginEditing";
+NSNotificationName const YYTextViewTextDidChangeNotification = @"YYTextViewTextDidChange";
+NSNotificationName const YYTextViewTextDidEndEditingNotification = @"YYTextViewTextDidEndEditing";
 
 
 typedef NS_ENUM (NSUInteger, YYTextGrabberDirection) {

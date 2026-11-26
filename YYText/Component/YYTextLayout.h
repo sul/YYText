@@ -240,7 +240,7 @@ extern const CGSize YYTextContainerMaxSize;
 ///< Array of CGRect(wrapped by NSValue) in container
 @property (nullable, nonatomic, strong, readonly) NSArray<NSValue *> *attachmentRects;
 ///< Set of Attachment (UIImage/UIView/CALayer)
-@property (nullable, nonatomic, strong, readonly) NSSet *attachmentContentsSet;
+@property (nullable, nonatomic, strong, readonly) NSSet<id> *attachmentContentsSet;
 ///< Number of rows
 @property (nonatomic, readonly) NSUInteger rowCount;
 ///< Visible text range
