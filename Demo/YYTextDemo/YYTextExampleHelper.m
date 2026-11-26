@@ -16,22 +16,16 @@ static BOOL DebugEnabled = NO;
 @implementation YYTextExampleHelper
 
 + (void)addDebugOptionToViewController:(UIViewController *)vc {
-    UISwitch *switcher = [UISwitch new];
-    [switcher.layer setValue:@(0.8) forKeyPath:@"transform.scale"];
-    
-    [switcher setOn:DebugEnabled];
-    [switcher addBlockForControlEvents:UIControlEventValueChanged block:^(UISwitch *sender) {
-        [self setDebug:sender.isOn];
-    }];
-    
-    UIView *view = [UIView new];
-    view.size = CGSizeMake(40, 44);
-    [view addSubview:switcher];
-    switcher.centerX = view.width / 2;
-    switcher.centerY = view.height / 2;
-    
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:view];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:(DebugEnabled ? @"Debug: ON" : @"Debug")
+                                                             style:UIBarButtonItemStylePlain
+                                                            target:self
+                                                            action:@selector(_toggleDebug:)];
     vc.navigationItem.rightBarButtonItem = item;
+}
+
++ (void)_toggleDebug:(UIBarButtonItem *)item {
+    [self setDebug:!DebugEnabled];
+    item.title = DebugEnabled ? @"Debug: ON" : @"Debug";
 }
 
 + (void)setDebug:(BOOL)debug {

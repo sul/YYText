@@ -23,9 +23,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    if ([self respondsToSelector:@selector(setAutomaticallyAdjustsScrollViewInsets:)]) {
-        self.automaticallyAdjustsScrollViewInsets = NO;
-    }
+    self.edgesForExtendedLayout = UIRectEdgeNone;
     
     
     NSMutableAttributedString *text = [NSMutableAttributedString new];
@@ -92,8 +90,9 @@
     label.attributedText = text;
     label.width = self.view.width - 60;
     label.centerX = self.view.width / 2;
-    label.height = self.view.height - (kiOS7Later ? 64 : 44) - 60;
-    label.top = (kiOS7Later ? 64 : 0) + 30;
+    label.height = self.view.height - 60;
+    label.top = 30;
+    label.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     label.textAlignment = NSTextAlignmentCenter;
     label.textVerticalAlignment = YYTextVerticalAlignmentCenter;
     label.numberOfLines = 0;

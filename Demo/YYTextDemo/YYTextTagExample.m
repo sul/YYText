@@ -20,9 +20,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    if ([self respondsToSelector:@selector(setAutomaticallyAdjustsScrollViewInsets:)]) {
-        self.automaticallyAdjustsScrollViewInsets = NO;
-    }
     
     NSMutableAttributedString *text = [NSMutableAttributedString new];
     NSArray *tags = @[@"◉red", @"◉orange", @"◉yellow", @"◉green", @"◉blue", @"◉purple", @"◉gray"];
@@ -78,16 +75,12 @@
     YYTextView *textView = [YYTextView new];
     textView.attributedText = text;
     textView.size = self.view.size;
-    textView.textContainerInset = UIEdgeInsetsMake(10 + 64, 10, 10, 10);
+    textView.textContainerInset = UIEdgeInsetsMake(10, 10, 10, 10);
+    textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     textView.allowsCopyAttributedString = YES;
     textView.allowsPasteAttributedString = YES;
     textView.delegate = self;
-    if (kiOS7Later) {
-        textView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
-    } else {
-        textView.height -= 64;
-    }
-    textView.scrollIndicatorInsets = textView.contentInset;
+    textView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     textView.selectedRange = NSMakeRange(text.length, 0);
     [self.view addSubview:textView];
     self.textView = textView;
