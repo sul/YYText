@@ -1,11 +1,11 @@
 YYText
 ==============
-[![License MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://raw.githubusercontent.com/ibireme/YYText/master/LICENSE)&nbsp;
-[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)&nbsp;
-[![CocoaPods](http://img.shields.io/cocoapods/v/YYText.svg?style=flat)](http://cocoapods.org/pods/YYText)&nbsp;
-[![CocoaPods](http://img.shields.io/cocoapods/p/YYText.svg?style=flat)](http://cocoadocs.org/docsets/YYText)&nbsp;
-[![Support](https://img.shields.io/badge/support-iOS%206%2B%20-blue.svg?style=flat)](https://www.apple.com/nl/ios/)&nbsp;
-[![Build Status](https://travis-ci.org/ibireme/YYText.svg?branch=master)](https://travis-ci.org/ibireme/YYText)
+[![License MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](LICENSE)&nbsp;
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg?style=flat)](https://github.com/sul/YYText/releases)&nbsp;
+[![Platform](https://img.shields.io/badge/platform-iOS%2011.0%2B-blue.svg?style=flat)](https://www.apple.com/ios/)&nbsp;
+[![SPM compatible](https://img.shields.io/badge/SPM-compatible-4BC51D.svg?style=flat)](https://swift.org/package-manager/)&nbsp;
+[![CocoaPods compatible](https://img.shields.io/badge/CocoaPods-compatible-4BC51D.svg?style=flat)](https://cocoapods.org/)&nbsp;
+[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 
 English | [简体中文](README_CN.md)
 
@@ -503,24 +503,54 @@ Installation
 
 ### CocoaPods
 
-1. Add `pod 'YYText', :git => 'https://github.com/sul/YYText.git', :tag => '2.0.0'` to your Podfile.
-2. Run `pod install` or `pod update`.
-3. Import \<YYText/YYText.h\>.
+1. Add the following to your `Podfile`:
+   ```ruby
+   pod 'YYText', :git => 'https://github.com/sul/YYText.git', :tag => '2.0.0'
+   ```
+2. Run `pod install` or `pod update`:
+   ```bash
+   pod install
+   ```
+3. Import in your source files:
+   ```objc
+   #import <YYText/YYText.h>
+   ```
 
 
 ### Swift Package Manager
 
-1. In Xcode, choose `File > Add Package Dependencies...` and enter `https://github.com/sul/YYText.git`,
-   or add `.package(url: "https://github.com/sul/YYText.git", branch: "master")` to your `Package.swift`.
+1. In Xcode, choose `File > Add Package Dependencies...` and enter `https://github.com/sul/YYText.git`, or add the following to your `Package.swift`:
+   ```swift
+   dependencies: [
+       .package(url: "https://github.com/sul/YYText.git", from: "2.0.0")
+   ]
+   ```
 2. Add the `YYText` product to your target.
-3. Import \<YYText/YYText.h\> (Objective-C) or `import YYText` (Swift).
+3. Import in your source files:
+   ```objc
+   // Objective-C
+   #import <YYText/YYText.h>
+   ```
+   ```swift
+   // Swift
+   import YYText
+   ```
 
 
 ### Carthage
 
-1. Add `github "ibireme/YYText"` to your Cartfile.
-2. Run `carthage update --platform ios` and add the framework to your project.
-3. Import \<YYText/YYText.h\>.
+1. Add the following to your `Cartfile`:
+   ```ruby
+   github "sul/YYText" ~> 2.0.0
+   ```
+2. Run Carthage and add the generated framework to your project:
+   ```bash
+   carthage update --platform ios
+   ```
+3. Import in your source files:
+   ```objc
+   #import <YYText/YYText.h>
+   ```
 
 
 ### Manually
@@ -533,7 +563,10 @@ Installation
     * CoreText
     * QuartzCore
     * Accelerate
-4. Import `YYText.h`.
+4. Import in your source files:
+   ```objc
+   #import "YYText.h"
+   ```
 
 
 ### Notice
@@ -542,13 +575,20 @@ YYText does not depend on [YYImage](https://github.com/ibireme/YYImage). Animate
 
 Documentation
 ==============
-Full API documentation is available on [CocoaDocs](http://cocoadocs.org/docsets/YYText/).<br/>
-You can also install documentation locally using [appledoc](https://github.com/tomaz/appledoc).
+You can generate and install full API documentation locally using [appledoc](https://github.com/tomaz/appledoc).
 
 
 Requirements
 ==============
 This library requires `iOS 11.0+` and `Xcode 12.0+`.
+
+
+Known Issues
+==============
+* YYText does not support all CoreText/TextKit attributes (such as `NSBackgroundColor`, `NSStrikethrough`, `NSUnderline`, `NSAttachment`, `NSLink`, etc.), though most have YYText equivalents. See the attribute tables above for details.
+* `YYTextView` does not implement partial layout refresh, so editing very large amounts of text (e.g., more than ~5,000 Chinese characters or ~10,000 English characters) may cause noticeable lag.
+* In vertical layout mode, adding `exclusionPaths` may occasionally cause text to render blank.
+* When using a non-rectangular `textContainerPath` with a `RunDelegate` wider than the text layout direction, text after the `RunDelegate` may not be displayed. This is a CoreText bug (or feature).
 
 
 License

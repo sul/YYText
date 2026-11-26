@@ -1,11 +1,11 @@
 YYText
 ==============
-[![License MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://raw.githubusercontent.com/ibireme/YYText/master/LICENSE)&nbsp;
-[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)&nbsp;
-[![CocoaPods](http://img.shields.io/cocoapods/v/YYText.svg?style=flat)](http://cocoapods.org/pods/YYText)&nbsp;
-[![CocoaPods](http://img.shields.io/cocoapods/p/YYText.svg?style=flat)](http://cocoadocs.org/docsets/YYText)&nbsp;
-[![Support](https://img.shields.io/badge/support-iOS%206%2B%20-blue.svg?style=flat)](https://www.apple.com/nl/ios/)&nbsp;
-[![Build Status](https://travis-ci.org/ibireme/YYText.svg?branch=master)](https://travis-ci.org/ibireme/YYText)
+[![License MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](LICENSE)&nbsp;
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg?style=flat)](https://github.com/sul/YYText/releases)&nbsp;
+[![Platform](https://img.shields.io/badge/platform-iOS%2011.0%2B-blue.svg?style=flat)](https://www.apple.com/ios/)&nbsp;
+[![SPM compatible](https://img.shields.io/badge/SPM-compatible-4BC51D.svg?style=flat)](https://swift.org/package-manager/)&nbsp;
+[![CocoaPods compatible](https://img.shields.io/badge/CocoaPods-compatible-4BC51D.svg?style=flat)](https://cocoapods.org/)&nbsp;
+[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 
 [English](README.md) | 简体中文
 
@@ -506,37 +506,70 @@ debugOptions.CGGlyphBorderColor = [UIColor colorWithRed:1.000 green:0.524 blue:0
 
 ### CocoaPods
 
-1. 在 Podfile 中添加 `pod 'YYText', :git => 'https://github.com/sul/YYText.git', :tag => '2.0.0'`。
-2. 执行 `pod install` 或 `pod update`。
-3. 导入 \<YYText/YYText.h\>。
+1. 在 `Podfile` 中添加：
+   ```ruby
+   pod 'YYText', :git => 'https://github.com/sul/YYText.git', :tag => '2.0.0'
+   ```
+2. 执行 `pod install` 或 `pod update`：
+   ```bash
+   pod install
+   ```
+3. 在代码中导入：
+   ```objc
+   #import <YYText/YYText.h>
+   ```
 
 
 ### Swift Package Manager
 
-1. 在 Xcode 中选择 `File > Add Package Dependencies...`，输入 `https://github.com/sul/YYText.git`，
-   或在 `Package.swift` 中添加 `.package(url: "https://github.com/sul/YYText.git", branch: "master")`。
+1. 在 Xcode 中选择 `File > Add Package Dependencies...`，输入 `https://github.com/sul/YYText.git`，或在 `Package.swift` 中添加：
+   ```swift
+   dependencies: [
+       .package(url: "https://github.com/sul/YYText.git", from: "2.0.0")
+   ]
+   ```
 2. 将 `YYText` product 添加到你的 target。
-3. 导入 \<YYText/YYText.h\>（Objective-C）或 `import YYText`（Swift）。
+3. 在代码中导入：
+   ```objc
+   // Objective-C
+   #import <YYText/YYText.h>
+   ```
+   ```swift
+   // Swift
+   import YYText
+   ```
 
 
 ### Carthage
 
-1. 在 Cartfile 中添加 `github "ibireme/YYText"`。
-2. 执行 `carthage update --platform ios` 并将生成的 framework 添加到你的工程。
-3. 导入 \<YYText/YYText.h\>。
+1. 在 `Cartfile` 中添加：
+   ```ruby
+   github "sul/YYText" ~> 2.0.0
+   ```
+2. 执行 Carthage 并将生成的 framework 添加到你的工程：
+   ```bash
+   carthage update --platform ios
+   ```
+3. 在代码中导入：
+   ```objc
+   #import <YYText/YYText.h>
+   ```
 
 
 ### 手动安装
 
-1. 下载 YYText 文件夹内的所有内容。
-2. 将 YYText 内的源文件添加(拖放)到你的工程。
-3. 链接以下 frameworks:
+1. 下载 `YYText` 文件夹内的所有内容。
+2. 将 `YYText` 内的源文件添加（拖放）到你的工程。
+3. 链接以下 frameworks：
     * UIKit
     * CoreFoundation
     * CoreText
     * QuartzCore
     * Accelerate
-4. 导入 `YYText.h`。
+4. 在代码中导入：
+   ```objc
+   #import "YYText.h"
+   ```
 
 
 ### 注意
@@ -545,7 +578,7 @@ YYText 不依赖 [YYImage](https://github.com/ibireme/YYImage)，动图附件使
 
 文档
 ==============
-你可以在 [CocoaDocs](http://cocoadocs.org/docsets/YYText/) 查看在线 API 文档，也可以用 [appledoc](https://github.com/tomaz/appledoc) 本地生成文档。
+你可以使用 [appledoc](https://github.com/tomaz/appledoc) 本地生成并安装完整的 API 文档。
 
 
 系统要求
