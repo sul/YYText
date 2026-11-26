@@ -46,6 +46,35 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)textView:(YYTextView *)textView didTapHighlight:(YYTextHighlight *)highlight inRange:(NSRange)characterRange rect:(CGRect)rect;
 - (BOOL)textView:(YYTextView *)textView shouldLongPressHighlight:(YYTextHighlight *)highlight inRange:(NSRange)characterRange;
 - (void)textView:(YYTextView *)textView didLongPressHighlight:(YYTextHighlight *)highlight inRange:(NSRange)characterRange rect:(CGRect)rect;
+
+/**
+ Asks the delegate for additional pasteboard items when copying (or cutting) an attachment.
+ 
+ @discussion Called once for each attachment in the copied text when `allowsCopyAttributedString` is YES.
+ The returned items are appended to the general pasteboard after the default items (plain text,
+ archived attributed text and a static image). Use it to provide encoded data such as
+ `@{@"com.compuserve.gif" : gifData}` so that animated images can be read by other apps.
+ 
+ @param textView   The text view.
+ @param attachment The attachment being copied.
+ @return Pasteboard items (UTI -> value), or nil.
+ */
+- (nullable NSArray<NSDictionary<NSString *, id> *> *)textView:(YYTextView *)textView pasteboardItemsForAttachment:(YYTextAttachment *)attachment;
+
+/**
+ Asks the delegate to decode an attachment content from the pasteboard when pasting.
+ 
+ @discussion Called when `allowsPasteImage` is YES and no archived attributed text is pasted
+ (or `allowsPasteAttributedString` is NO). Return a UIImage, UIView or CALayer, its size
+ (`size` / `bounds.size`) is used as the attachment size. You can also return a YYTextAttachment
+ (with one of these as `content`) to keep custom `userInfo`, such as the encoded image data.
+ Return nil to use the default behavior.
+ 
+ @param textView   The text view.
+ @param pasteboard The pasteboard to read from.
+ @return The attachment content (UIImage/UIView/CALayer/YYTextAttachment), or nil.
+ */
+- (nullable id)textView:(YYTextView *)textView attachmentContentFromPasteboard:(UIPasteboard *)pasteboard;
 @end
 
 

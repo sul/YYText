@@ -11,21 +11,6 @@
 
 #import "UIPasteboard+YYText.h"
 #import "NSAttributedString+YYText.h"
-#import <MobileCoreServices/MobileCoreServices.h>
-
-
-#if __has_include("YYImage.h")
-#import "YYImage.h"
-#define YYTextAnimatedImageAvailable 1
-#elif __has_include(<YYImage/YYImage.h>)
-#import <YYImage/YYImage.h>
-#define YYTextAnimatedImageAvailable 1
-#elif __has_include(<YYWebImage/YYImage.h>)
-#import <YYWebImage/YYImage.h>
-#define YYTextAnimatedImageAvailable 1
-#else
-#define YYTextAnimatedImageAvailable 0
-#endif
 
 
 // Dummy class for category
@@ -36,31 +21,36 @@
 NSString *const YYTextPasteboardTypeAttributedString = @"com.ibireme.NSAttributedString";
 NSString *const YYTextUTTypeWEBP = @"com.google.webp";
 
+static NSString *const YYTextUTTypePNG = @"public.png";
+static NSString *const YYTextUTTypeJPEG = @"public.jpeg";
+static NSString *const YYTextUTTypeGIF = @"com.compuserve.gif";
+static NSString *const YYTextUTTypeImage = @"public.image";
+
 @implementation UIPasteboard (YYText)
 
 
 - (void)setYy_PNGData:(NSData *)PNGData {
-    [self setData:PNGData forPasteboardType:(id)kUTTypePNG];
+    [self setData:PNGData forPasteboardType:YYTextUTTypePNG];
 }
 
 - (NSData *)yy_PNGData {
-    return [self dataForPasteboardType:(id)kUTTypePNG];
+    return [self dataForPasteboardType:YYTextUTTypePNG];
 }
 
 - (void)setYy_JPEGData:(NSData *)JPEGData {
-    [self setData:JPEGData forPasteboardType:(id)kUTTypeJPEG];
+    [self setData:JPEGData forPasteboardType:YYTextUTTypeJPEG];
 }
 
 - (NSData *)yy_JPEGData {
-    return [self dataForPasteboardType:(id)kUTTypeJPEG];
+    return [self dataForPasteboardType:YYTextUTTypeJPEG];
 }
 
 - (void)setYy_GIFData:(NSData *)GIFData {
-    [self setData:GIFData forPasteboardType:(id)kUTTypeGIF];
+    [self setData:GIFData forPasteboardType:YYTextUTTypeGIF];
 }
 
 - (NSData *)yy_GIFData {
-    return [self dataForPasteboardType:(id)kUTTypeGIF];
+    return [self dataForPasteboardType:YYTextUTTypeGIF];
 }
 
 - (void)setYy_WEBPData:(NSData *)WEBPData {
@@ -72,11 +62,11 @@ NSString *const YYTextUTTypeWEBP = @"com.google.webp";
 }
 
 - (void)setYy_ImageData:(NSData *)imageData {
-    [self setData:imageData forPasteboardType:(id)kUTTypeImage];
+    [self setData:imageData forPasteboardType:YYTextUTTypeImage];
 }
 
 - (NSData *)yy_ImageData {
-    return [self dataForPasteboardType:(id)kUTTypeImage];
+    return [self dataForPasteboardType:YYTextUTTypeImage];
 }
 
 - (void)setYy_AttributedString:(NSAttributedString *)attributedString {
@@ -99,37 +89,6 @@ NSString *const YYTextUTTypeWEBP = @"com.google.webp";
             NSDictionary *item = @{@"com.apple.uikit.image" : simpleImage};
             [self addItems:@[item]];
         }
-        
-#if YYTextAnimatedImageAvailable
-        // save animated image
-        if ([attachment.content isKindOfClass:[UIImageView class]]) {
-            UIImageView *imageView = attachment.content;
-            Class aniImageClass = NSClassFromString(@"YYImage");
-            UIImage *image = imageView.image;
-            if (aniImageClass && [image isKindOfClass:aniImageClass]) {
-                NSData *data = [image valueForKey:@"animatedImageData"];
-                NSNumber *type = [image valueForKey:@"animatedImageType"];
-                if (data) {
-                    switch (type.unsignedIntegerValue) {
-                        case YYImageTypeGIF: {
-                            NSDictionary *item = @{(id)kUTTypeGIF : data};
-                            [self addItems:@[item]];
-                        } break;
-                        case YYImageTypePNG: { // APNG
-                            NSDictionary *item = @{(id)kUTTypePNG : data};
-                            [self addItems:@[item]];
-                        } break;
-                        case YYImageTypeWebP: {
-                            NSDictionary *item = @{(id)YYTextUTTypeWEBP : data};
-                            [self addItems:@[item]];
-                        } break;
-                        default: break;
-                    }
-                }
-            }
-        }
-#endif
-        
     }];
 }
 

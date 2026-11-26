@@ -15,7 +15,9 @@
 #import "UIView+YYText.h"
 
 
-@implementation YYTextEffectWindow
+@implementation YYTextEffectWindow {
+    BOOL _settingRootViewController;
+}
 
 + (instancetype)sharedWindow {
     static YYTextEffectWindow *one = nil;
@@ -44,25 +46,67 @@
             one.layer.backgroundColor = [UIColor clearColor].CGColor;
         }
     });
+    [one _updateWindowScene];
     return one;
+}
+
+// Windows without a scene are not displayed in scene-based apps (iOS 13+).
+- (void)_updateWindowScene {
+    if (@available(iOS 13.0, *)) {
+        UIWindowScene *scene = YYTextKeyWindow().windowScene;
+        if (!scene) {
+            for (UIScene *s in YYTextSharedApplication().connectedScenes) {
+                if (s.activationState == UISceneActivationStateForegroundActive && [s isKindOfClass:[UIWindowScene class]]) {
+                    scene = (UIWindowScene *)s;
+                    break;
+                }
+            }
+        }
+        if (scene && self.windowScene != scene) {
+            self.windowScene = scene;
+        }
+    }
+}
+
+- (NSArray<UIWindow *> *)_candidateWindows {
+    if (@available(iOS 13.0, *)) {
+        if (self.windowScene) return self.windowScene.windows;
+    }
+    return YYTextSharedApplication().windows;
 }
 
 // stop self from becoming the KeyWindow
 - (void)becomeKeyWindow {
-    [[YYTextSharedApplication().delegate window] makeKeyWindow];
+    UIApplication *app = YYTextSharedApplication();
+    UIWindow *window = nil;
+    if ([app.delegate respondsToSelector:@selector(window)]) {
+        window = app.delegate.window;
+    }
+    if (!window || window == self) {
+        for (UIWindow *w in [self _candidateWindows].reverseObjectEnumerator) {
+            if (w != self && !w.hidden && w.windowLevel == UIWindowLevelNormal) {
+                window = w;
+                break;
+            }
+        }
+    }
+    if (window && window != self) [window makeKeyWindow];
 }
 
 - (UIViewController *)rootViewController {
-    for (UIWindow *window in [YYTextSharedApplication() windows]) {
+    for (UIWindow *window in [self _candidateWindows]) {
         if (self == window) continue;
         if (window.hidden) continue;
         UIViewController *topViewController = window.rootViewController;
         if (topViewController) return topViewController;
     }
     UIViewController *viewController = [super rootViewController];
-    if (!viewController) {
+    // UIKit may call this getter from inside -setRootViewController:.
+    if (!viewController && !_settingRootViewController) {
+        _settingRootViewController = YES;
         viewController = [UIViewController new];
         [super setRootViewController:viewController];
+        _settingRootViewController = NO;
     }
     return viewController;
 }
@@ -72,8 +116,9 @@
     UIApplication *app = YYTextSharedApplication();
     if (!app) return;
     
-    UIWindow *top = app.windows.lastObject;
-    UIWindow *key = app.keyWindow;
+    [self _updateWindowScene];
+    UIWindow *top = [self _candidateWindows].lastObject;
+    UIWindow *key = YYTextKeyWindow();
     if (key && key.windowLevel > top.windowLevel) top = key;
     if (top == self) return;
     self.windowLevel = top.windowLevel + 1;
@@ -268,9 +313,9 @@
     CGContextRotateCTM(context, -rotation);
     CGContextTranslateCTM(context, tp.x - captureCenter.x, tp.y - captureCenter.y);
     
-    NSMutableArray *windows = app.windows.mutableCopy;
-    UIWindow *keyWindow = app.keyWindow;
-    if (![windows containsObject:keyWindow]) [windows addObject:keyWindow];
+    NSMutableArray *windows = [self _candidateWindows].mutableCopy;
+    UIWindow *keyWindow = YYTextKeyWindow();
+    if (keyWindow && ![windows containsObject:keyWindow]) [windows addObject:keyWindow];
     [windows sortUsingComparator:^NSComparisonResult(UIWindow *w1, UIWindow *w2) {
         if (w1.windowLevel < w2.windowLevel) return NSOrderedAscending;
         else if (w1.windowLevel > w2.windowLevel) return NSOrderedDescending;

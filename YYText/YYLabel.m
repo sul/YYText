@@ -14,10 +14,9 @@
 #import "YYTextWeakProxy.h"
 #import "YYTextUtilities.h"
 #import "NSAttributedString+YYText.h"
-#import <libkern/OSAtomic.h>
 
 
-static dispatch_queue_t YYLabelGetReleaseQueue() {
+static dispatch_queue_t YYLabelGetReleaseQueue(void) {
     return dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
 }
 
@@ -1215,17 +1214,14 @@ static dispatch_queue_t YYLabelGetReleaseQueue() {
 @implementation YYLabel (IBInspectableProperties)
 
 - (BOOL)fontIsBold_:(UIFont *)font {
-    if (![font respondsToSelector:@selector(fontDescriptor)]) return NO;
     return (font.fontDescriptor.symbolicTraits & UIFontDescriptorTraitBold) > 0;
 }
 
 - (UIFont *)boldFont_:(UIFont *)font {
-    if (![font respondsToSelector:@selector(fontDescriptor)]) return font;
     return [UIFont fontWithDescriptor:[font.fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold] size:font.pointSize];
 }
 
 - (UIFont *)normalFont_:(UIFont *)font {
-    if (![font respondsToSelector:@selector(fontDescriptor)]) return font;
     return [UIFont fontWithDescriptor:[font.fontDescriptor fontDescriptorWithSymbolicTraits:0] size:font.pointSize];
 }
 

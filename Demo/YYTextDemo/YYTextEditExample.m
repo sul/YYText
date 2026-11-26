@@ -8,7 +8,6 @@
 
 #import "YYTextEditExample.h"
 #import "YYText.h"
-#import "YYImage.h"
 #import "UIImage+YYWebImage.h"
 #import "UIView+YYAdd.h"
 #import "NSBundle+YYAdd.h"
@@ -160,8 +159,8 @@
 
 - (void)initImageView {
     NSData *data = [NSData dataNamed:@"dribbble256_imageio.png"];
-    UIImage *image = [[YYImage alloc] initWithData:data scale:2];
-    UIImageView *imageView = [[YYAnimatedImageView alloc] initWithImage:image];
+    UIImage *image = [UIImage imageWithData:data scale:2];
+    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
     imageView.clipsToBounds = YES;
     imageView.userInteractionEnabled = YES;
     imageView.layer.cornerRadius = imageView.height / 2;

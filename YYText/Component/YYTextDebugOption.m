@@ -11,7 +11,6 @@
 
 #import "YYTextDebugOption.h"
 #import "YYTextWeakProxy.h"
-#import <libkern/OSAtomic.h>
 #import <pthread.h>
 
 static pthread_mutex_t _sharedDebugLock;
@@ -30,7 +29,7 @@ void _sharedDebugSetFunction(const void *value, void *context) {
     [target setDebugOption:_sharedDebugOption];
 }
 
-static void _initSharedDebug() {
+static void _initSharedDebug(void) {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         pthread_mutex_init(&_sharedDebugLock, NULL);
@@ -49,7 +48,7 @@ static void _setSharedDebugOption(YYTextDebugOption *option) {
     pthread_mutex_unlock(&_sharedDebugLock);
 }
 
-static YYTextDebugOption *_getSharedDebugOption() {
+static YYTextDebugOption *_getSharedDebugOption(void) {
     _initSharedDebug();
     pthread_mutex_lock(&_sharedDebugLock);
     YYTextDebugOption *op = _sharedDebugOption;

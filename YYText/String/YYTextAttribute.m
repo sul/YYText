@@ -16,15 +16,6 @@
 #import "YYTextArchiver.h"
 
 
-static double _YYDeviceSystemVersion() {
-    static double version;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        version = [UIDevice currentDevice].systemVersion.doubleValue;
-    });
-    return version;
-}
-
 
 NSString *const YYTextBackedStringAttributeName = @"YYTextBackedString";
 NSString *const YYTextBindingAttributeName = @"YYTextBinding";
@@ -83,21 +74,17 @@ YYTextAttributeType YYTextAttributeGetType(NSString *name){
         dic[(id)kCTWritingDirectionAttributeName] = CoreText_YYText;
         dic[NSParagraphStyleAttributeName] = All;
         
-        if (_YYDeviceSystemVersion() >= 7) {
-            dic[NSStrikethroughColorAttributeName] = UIKit;
-            dic[NSUnderlineColorAttributeName] = UIKit;
-            dic[NSTextEffectAttributeName] = UIKit;
-            dic[NSObliquenessAttributeName] = UIKit;
-            dic[NSExpansionAttributeName] = UIKit;
-            dic[(id)kCTLanguageAttributeName] = CoreText_YYText;
-            dic[NSBaselineOffsetAttributeName] = UIKit;
-            dic[NSWritingDirectionAttributeName] = All;
-            dic[NSAttachmentAttributeName] = UIKit;
-            dic[NSLinkAttributeName] = UIKit;
-        }
-        if (_YYDeviceSystemVersion() >= 8) {
-            dic[(id)kCTRubyAnnotationAttributeName] = CoreText;
-        }
+        dic[NSStrikethroughColorAttributeName] = UIKit;
+        dic[NSUnderlineColorAttributeName] = UIKit;
+        dic[NSTextEffectAttributeName] = UIKit;
+        dic[NSObliquenessAttributeName] = UIKit;
+        dic[NSExpansionAttributeName] = UIKit;
+        dic[(id)kCTLanguageAttributeName] = CoreText_YYText;
+        dic[NSBaselineOffsetAttributeName] = UIKit;
+        dic[NSWritingDirectionAttributeName] = All;
+        dic[NSAttachmentAttributeName] = UIKit;
+        dic[NSLinkAttributeName] = UIKit;
+        dic[(id)kCTRubyAnnotationAttributeName] = CoreText;
         
         dic[YYTextBackedStringAttributeName] = YYText;
         dic[YYTextBindingAttributeName] = YYText;

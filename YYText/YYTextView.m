@@ -24,35 +24,6 @@
 #import "UIView+YYText.h"
 
 
-static double _YYDeviceSystemVersion() {
-    static double version;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        version = [UIDevice currentDevice].systemVersion.doubleValue;
-    });
-    return version;
-}
-
-#ifndef kSystemVersion
-#define kSystemVersion _YYDeviceSystemVersion()
-#endif
-
-#ifndef kiOS6Later
-#define kiOS6Later (kSystemVersion >= 6)
-#endif
-
-#ifndef kiOS7Later
-#define kiOS7Later (kSystemVersion >= 7)
-#endif
-
-#ifndef kiOS8Later
-#define kiOS8Later (kSystemVersion >= 8)
-#endif
-
-#ifndef kiOS9Later
-#define kiOS9Later (kSystemVersion >= 9)
-#endif
-
 
 
 #define kDefaultUndoLevelMax 20 // Default maximum undo level
@@ -104,7 +75,7 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
 @end
 
 
-@interface YYTextView () <UIScrollViewDelegate, UIAlertViewDelegate, YYTextDebugTarget, YYTextKeyboardObserver> {
+@interface YYTextView () <UIScrollViewDelegate, YYTextDebugTarget, YYTextKeyboardObserver> {
     
     YYTextRange *_selectedTextRange; /// nonnull
     YYTextRange *_markedTextRange;
@@ -637,11 +608,20 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
     if (self.isFirstResponder || _containerView.isFirstResponder) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             UIMenuController *menu = [UIMenuController sharedMenuController];
-            [menu setTargetRect:CGRectStandardize(rect) inView:_selectionView];
-            [menu update];
-            if (!_state.showingMenu || !menu.menuVisible) {
+            if (@available(iOS 13.0, *)) {
+                [menu update];
                 _state.showingMenu = YES;
-                [menu setMenuVisible:YES animated:YES];
+                [menu showMenuFromView:_selectionView rect:CGRectStandardize(rect)];
+            } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                [menu setTargetRect:CGRectStandardize(rect) inView:_selectionView];
+                [menu update];
+                if (!_state.showingMenu || !menu.menuVisible) {
+                    _state.showingMenu = YES;
+                    [menu setMenuVisible:YES animated:YES];
+                }
+#pragma clang diagnostic pop
             }
         });
     }
@@ -652,7 +632,14 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
     if (_state.showingMenu) {
         _state.showingMenu = NO;
         UIMenuController *menu = [UIMenuController sharedMenuController];
-        [menu setMenuVisible:NO animated:YES];
+        if (@available(iOS 13.0, *)) {
+            [menu hideMenuFromView:_selectionView];
+        } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            [menu setMenuVisible:NO animated:YES];
+#pragma clang diagnostic pop
+        }
     }
     if (_containerView.isFirstResponder) {
         _state.ignoreFirstResponder = YES;
@@ -750,12 +737,7 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
                     UIEdgeInsets newIndicatorInsets = originalScrollIndicatorInsets;
                     newInset.bottom = inter.size.height + extend;
                     newIndicatorInsets.bottom = newInset.bottom;
-                    UIViewAnimationOptions curve;
-                    if (kiOS7Later) {
-                        curve = 7 << 16;
-                    } else {
-                        curve = UIViewAnimationOptionCurveEaseInOut;
-                    }
+                    UIViewAnimationOptions curve = 7 << 16;
                     [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionAllowUserInteraction | curve animations:^{
                         [super setContentInset:newInset];
                         [super setScrollIndicatorInsets:newIndicatorInsets];
@@ -1276,7 +1258,7 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
             return YES;
         }
     }
-    if (pasteboard.image || pasteboard.yy_ImageData.length > 0) {
+    if (pasteboard.hasImages || pasteboard.yy_ImageData.length > 0) {
         if (_allowsPasteImage) {
             return YES;
         }
@@ -1289,7 +1271,15 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
     if (_allowsCopyAttributedString) {
         NSAttributedString *text = [_innerText attributedSubstringFromRange:_selectedTextRange.asRange];
         if (text.length) {
-            [UIPasteboard generalPasteboard].yy_AttributedString = text;
+            UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+            pasteboard.yy_AttributedString = text;
+            if ([self.delegate respondsToSelector:@selector(textView:pasteboardItemsForAttachment:)]) {
+                [text enumerateAttribute:YYTextAttachmentAttributeName inRange:NSMakeRange(0, text.length) options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(YYTextAttachment *attachment, NSRange range, BOOL *stop) {
+                    if (![attachment isKindOfClass:[YYTextAttachment class]]) return;
+                    NSArray *items = [self.delegate textView:self pasteboardItemsForAttachment:attachment];
+                    if (items.count) [pasteboard addItems:items];
+                }];
+            }
         }
     } else {
         NSString *string = [_innerText yy_plainTextForRange:_selectedTextRange.asRange];
@@ -1577,7 +1567,7 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
 - (UIViewController *)_getRootViewController {
     UIViewController *ctrl = nil;
     UIApplication *app = YYTextSharedApplication();
-    if (!ctrl) ctrl = app.keyWindow.rootViewController;
+    if (!ctrl) ctrl = YYTextKeyWindow().rootViewController;
     if (!ctrl) ctrl = [app.windows.firstObject rootViewController];
     if (!ctrl) ctrl = self.yy_viewController;
     if (!ctrl) return nil;
@@ -1686,63 +1676,39 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
     UIViewController *ctrl = [self _getRootViewController];
     
     if (canUndo && canRedo) {
-        if (kiOS8Later) {
-            UIAlertController *alert = [UIAlertController alertControllerWithTitle:strings[4] message:@"" preferredStyle:UIAlertControllerStyleAlert];
-            [alert addAction:[UIAlertAction actionWithTitle:strings[3] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                [_self _undo];
-                [_self _restoreFirstResponderAfterUndoAlert];
-            }]];
-            [alert addAction:[UIAlertAction actionWithTitle:strings[2] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                [_self _redo];
-                [_self _restoreFirstResponderAfterUndoAlert];
-            }]];
-            [alert addAction:[UIAlertAction actionWithTitle:strings[0] style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
-                [_self _restoreFirstResponderAfterUndoAlert];
-            }]];
-            [ctrl presentViewController:alert animated:YES completion:nil];
-        } else {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:strings[4] message:@"" delegate:self cancelButtonTitle:strings[0] otherButtonTitles:strings[3], strings[2], nil];
-            [alert show];
-#pragma clang diagnostic pop
-        }
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:strings[4] message:@"" preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:strings[3] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            [_self _undo];
+            [_self _restoreFirstResponderAfterUndoAlert];
+        }]];
+        [alert addAction:[UIAlertAction actionWithTitle:strings[2] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            [_self _redo];
+            [_self _restoreFirstResponderAfterUndoAlert];
+        }]];
+        [alert addAction:[UIAlertAction actionWithTitle:strings[0] style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+            [_self _restoreFirstResponderAfterUndoAlert];
+        }]];
+        [ctrl presentViewController:alert animated:YES completion:nil];
     } else if (canUndo) {
-        if (kiOS8Later) {
-            UIAlertController *alert = [UIAlertController alertControllerWithTitle:strings[4] message:@"" preferredStyle:UIAlertControllerStyleAlert];
-            [alert addAction:[UIAlertAction actionWithTitle:strings[3] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                [_self _undo];
-                [_self _restoreFirstResponderAfterUndoAlert];
-            }]];
-            [alert addAction:[UIAlertAction actionWithTitle:strings[0] style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
-                [_self _restoreFirstResponderAfterUndoAlert];
-            }]];
-            [ctrl presentViewController:alert animated:YES completion:nil];
-        } else {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:strings[4] message:@"" delegate:self cancelButtonTitle:strings[0] otherButtonTitles:strings[3], nil];
-            [alert show];
-#pragma clang diagnostic pop
-        }
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:strings[4] message:@"" preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:strings[3] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            [_self _undo];
+            [_self _restoreFirstResponderAfterUndoAlert];
+        }]];
+        [alert addAction:[UIAlertAction actionWithTitle:strings[0] style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+            [_self _restoreFirstResponderAfterUndoAlert];
+        }]];
+        [ctrl presentViewController:alert animated:YES completion:nil];
     } else if (canRedo) {
-        if (kiOS8Later) {
-            UIAlertController *alert = [UIAlertController alertControllerWithTitle:strings[2] message:@"" preferredStyle:UIAlertControllerStyleAlert];
-            [alert addAction:[UIAlertAction actionWithTitle:strings[1] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                [_self _redo];
-                [_self _restoreFirstResponderAfterUndoAlert];
-            }]];
-            [alert addAction:[UIAlertAction actionWithTitle:strings[0] style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
-                [_self _restoreFirstResponderAfterUndoAlert];
-            }]];
-            [ctrl presentViewController:alert animated:YES completion:nil];
-        } else {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:strings[2] message:@"" delegate:self cancelButtonTitle:strings[0] otherButtonTitles:strings[1], nil];
-            [alert show];
-#pragma clang diagnostic pop
-        }
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:strings[2] message:@"" preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:strings[1] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            [_self _redo];
+            [_self _restoreFirstResponderAfterUndoAlert];
+        }]];
+        [alert addAction:[UIAlertAction actionWithTitle:strings[0] style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+            [_self _restoreFirstResponderAfterUndoAlert];
+        }]];
+        [ctrl presentViewController:alert animated:YES completion:nil];
     }
 }
 #endif
@@ -2446,27 +2412,25 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
 }
 
 - (void)tintColorDidChange {
-    if ([self respondsToSelector:@selector(tintColor)]) {
-        UIColor *color = self.tintColor;
-        NSMutableDictionary *attrs = _highlightTextAttributes.mutableCopy;
-        NSMutableDictionary *linkAttrs = _linkTextAttributes.mutableCopy;
-        if (!linkAttrs) linkAttrs = @{}.mutableCopy;
-        if (!color) {
-            [attrs removeObjectForKey:NSForegroundColorAttributeName];
-            [attrs removeObjectForKey:(id)kCTForegroundColorAttributeName];
-            [linkAttrs setObject:[self _defaultTintColor] forKey:NSForegroundColorAttributeName];
-            [linkAttrs setObject:(id)[self _defaultTintColor].CGColor forKey:(id)kCTForegroundColorAttributeName];
-        } else {
-            [attrs setObject:color forKey:NSForegroundColorAttributeName];
-            [attrs setObject:(id)color.CGColor forKey:(id)kCTForegroundColorAttributeName];
-            [linkAttrs setObject:color forKey:NSForegroundColorAttributeName];
-            [linkAttrs setObject:(id)color.CGColor forKey:(id)kCTForegroundColorAttributeName];
-        }
-        self.highlightTextAttributes = attrs;
-        _selectionView.color = color ? color : [self _defaultTintColor];
-        _linkTextAttributes = linkAttrs;
-        [self _commitUpdate];
+    UIColor *color = self.tintColor;
+    NSMutableDictionary *attrs = _highlightTextAttributes.mutableCopy;
+    NSMutableDictionary *linkAttrs = _linkTextAttributes.mutableCopy;
+    if (!linkAttrs) linkAttrs = @{}.mutableCopy;
+    if (!color) {
+        [attrs removeObjectForKey:NSForegroundColorAttributeName];
+        [attrs removeObjectForKey:(id)kCTForegroundColorAttributeName];
+        [linkAttrs setObject:[self _defaultTintColor] forKey:NSForegroundColorAttributeName];
+        [linkAttrs setObject:(id)[self _defaultTintColor].CGColor forKey:(id)kCTForegroundColorAttributeName];
+    } else {
+        [attrs setObject:color forKey:NSForegroundColorAttributeName];
+        [attrs setObject:(id)color.CGColor forKey:(id)kCTForegroundColorAttributeName];
+        [linkAttrs setObject:color forKey:NSForegroundColorAttributeName];
+        [linkAttrs setObject:(id)color.CGColor forKey:(id)kCTForegroundColorAttributeName];
     }
+    self.highlightTextAttributes = attrs;
+    _selectionView.color = color ? color : [self _defaultTintColor];
+    _linkTextAttributes = linkAttrs;
+    [self _commitUpdate];
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
@@ -2919,56 +2883,40 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
         atr = p.yy_AttributedString;
         if (atr.length == 0) atr = nil;
     }
+    if (!atr && _allowsPasteImage && [self.delegate respondsToSelector:@selector(textView:attachmentContentFromPasteboard:)]) {
+        id content = [self.delegate textView:self attachmentContentFromPasteboard:p];
+        YYTextAttachment *attachment = nil;
+        if ([content isKindOfClass:[YYTextAttachment class]]) {
+            attachment = content;
+            content = attachment.content;
+        }
+        CGSize size = CGSizeZero;
+        if ([content isKindOfClass:[UIImage class]]) {
+            size = ((UIImage *)content).size;
+        } else if ([content isKindOfClass:[UIView class]] || [content isKindOfClass:[CALayer class]]) {
+            size = [(UIView *)content bounds].size;
+        }
+        if (content && size.width > 0 && size.height > 0) {
+            NSMutableAttributedString *attText = [NSAttributedString yy_attachmentStringWithContent:content contentMode:UIViewContentModeScaleToFill width:size.width ascent:size.height descent:0];
+            if (attachment) [attText yy_setTextAttachment:attachment range:NSMakeRange(0, attText.length)];
+            NSDictionary *attrs = _typingAttributesHolder.yy_attributes;
+            if (attrs) [attText addAttributes:attrs range:NSMakeRange(0, attText.length)];
+            atr = attText;
+        }
+    }
     if (!atr && _allowsPasteImage) {
-        UIImage *img = nil;
-        
-        Class cls = NSClassFromString(@"YYImage");
-        if (cls) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundeclared-selector"
-            if (p.yy_GIFData) {
-                img = [(id)cls performSelector:@selector(imageWithData:scale:) withObject:p.yy_GIFData withObject:nil];
-            }
-            if (!img && p.yy_PNGData) {
-                img = [(id)cls performSelector:@selector(imageWithData:scale:) withObject:p.yy_PNGData withObject:nil];
-            }
-            if (!img && p.yy_WEBPData) {
-                img = [(id)cls performSelector:@selector(imageWithData:scale:) withObject:p.yy_WEBPData withObject:nil];
-            }
-#pragma clang diagnostic pop
-        }
-        
-        if (!img) {
-            img = p.image;
-        }
+        UIImage *img = p.image;
         if (!img && p.yy_ImageData) {
             img = [UIImage imageWithData:p.yy_ImageData scale:YYTextScreenScale()];
         }
         if (img && img.size.width > 1 && img.size.height > 1) {
             id content = img;
             
-            if (cls) {
-                if ([img conformsToProtocol:NSProtocolFromString(@"YYAnimatedImage")]) {
-                    NSNumber *frameCount = [img valueForKey:@"animatedImageFrameCount"];
-                    if (frameCount.integerValue > 1) {
-                        Class viewCls = NSClassFromString(@"YYAnimatedImageView");
-                        UIImageView *imgView = [(id)viewCls new];
-                        imgView.image = img;
-                        imgView.frame = CGRectMake(0, 0, img.size.width, img.size.height);
-                        if (imgView) {
-                            content = imgView;
-                        }
-                    }
-                }
-            }
-            
-            if ([content isKindOfClass:[UIImage class]] && img.images.count > 1) {
+            if (img.images.count > 1) {
                 UIImageView *imgView = [UIImageView new];
                 imgView.image = img;
                 imgView.frame = CGRectMake(0, 0, img.size.width, img.size.height);
-                if (imgView) {
-                    content = imgView;
-                }
+                content = imgView;
             }
             
             NSMutableAttributedString *attText = [NSAttributedString yy_attachmentStringWithContent:content contentMode:UIViewContentModeScaleToFill width:img.size.width ascent:img.size.height descent:0];
@@ -3204,20 +3152,6 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
 
 - (void)keyboardChangedWithTransition:(YYTextKeyboardTransition)transition {
     [self _keyboardChanged];
-}
-
-#pragma mark - @protocol UIALertViewDelegate
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
-    if (title.length == 0) return;
-    NSArray *strings = [self _localizedUndoStrings];
-    if ([title isEqualToString:strings[1]] || [title isEqualToString:strings[2]]) {
-        [self _redo];
-    } else if ([title isEqualToString:strings[3]] || [title isEqualToString:strings[4]]) {
-        [self _undo];
-    }
-    [self _restoreFirstResponderAfterUndoAlert];
 }
 
 #pragma mark - @protocol UIKeyInput
@@ -3696,17 +3630,14 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
 @implementation YYTextView(IBInspectableProperties)
 
 - (BOOL)fontIsBold_:(UIFont *)font {
-    if (![font respondsToSelector:@selector(fontDescriptor)]) return NO;
     return (font.fontDescriptor.symbolicTraits & UIFontDescriptorTraitBold) > 0;
 }
 
 - (UIFont *)boldFont_:(UIFont *)font {
-    if (![font respondsToSelector:@selector(fontDescriptor)]) return font;
     return [UIFont fontWithDescriptor:[font.fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold] size:font.pointSize];
 }
 
 - (UIFont *)normalFont_:(UIFont *)font {
-    if (![font respondsToSelector:@selector(fontDescriptor)]) return font;
     return [UIFont fontWithDescriptor:[font.fontDescriptor fontDescriptorWithSymbolicTraits:0] size:font.pointSize];
 }
 

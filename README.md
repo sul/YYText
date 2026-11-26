@@ -506,6 +506,14 @@ Installation
 3. Import \<YYText/YYText.h\>.
 
 
+### Swift Package Manager
+
+1. In Xcode, choose `File > Add Package Dependencies...` and enter `https://github.com/sul/YYText.git`,
+   or add `.package(url: "https://github.com/sul/YYText.git", branch: "master")` to your `Package.swift`.
+2. Add the `YYText` product to your target.
+3. Import \<YYText/YYText.h\> (Objective-C) or `import YYText` (Swift).
+
+
 ### Carthage
 
 1. Add `github "ibireme/YYText"` to your Cartfile.
@@ -523,12 +531,11 @@ Installation
     * CoreText
     * QuartzCore
     * Accelerate
-    * MobileCoreServices
 4. Import `YYText.h`.
 
 
 ### Notice
-You may add [YYImage](https://github.com/ibireme/YYImage) or [YYWebImage](https://github.com/ibireme/YYWebImage) to your project if you want to support animated image (GIF/APNG/WebP).
+YYText does not depend on [YYImage](https://github.com/ibireme/YYImage). Animated attachments are displayed with `UIImageView` using animated `UIImage` (`UIImage.images`).
 
 
 Documentation
@@ -539,7 +546,7 @@ You can also install documentation locally using [appledoc](https://github.com/t
 
 Requirements
 ==============
-This library requires `iOS 6.0+` and `Xcode 8.0+`.
+This library requires `iOS 11.0+` and `Xcode 12.0+`.
 
 
 License
@@ -1053,6 +1060,14 @@ debugOptions.CGGlyphBorderColor = [UIColor colorWithRed:1.000 green:0.524 blue:0
 3. 导入 \<YYText/YYText.h\>。
 
 
+### Swift Package Manager
+
+1. 在 Xcode 中选择 `File > Add Package Dependencies...`，输入 `https://github.com/sul/YYText.git`，
+   或在 `Package.swift` 中添加 `.package(url: "https://github.com/sul/YYText.git", branch: "master")`。
+2. 将 `YYText` product 添加到你的 target。
+3. 导入 \<YYText/YYText.h\>（Objective-C）或 `import YYText`（Swift）。
+
+
 ### Carthage
 
 1. 在 Cartfile 中添加 `github "ibireme/YYText"`。
@@ -1070,12 +1085,11 @@ debugOptions.CGGlyphBorderColor = [UIColor colorWithRed:1.000 green:0.524 blue:0
     * CoreText
     * QuartzCore
     * Accelerate
-    * MobileCoreServices
 4. 导入 `YYText.h`。
 
 
 ### 注意
-你可以添加 [YYImage](https://github.com/ibireme/YYImage) 或 [YYWebImage](https://github.com/ibireme/YYWebImage) 到你的工程，以支持动画格式(GIF/APNG/WebP)的图片。
+YYText 不依赖 [YYImage](https://github.com/ibireme/YYImage)，动图附件使用 `UIImageView` 配合系统动图 `UIImage`（`UIImage.images`）显示。
 
 
 文档
@@ -1085,7 +1099,7 @@ debugOptions.CGGlyphBorderColor = [UIColor colorWithRed:1.000 green:0.524 blue:0
 
 系统要求
 ==============
-该项目最低支持 `iOS 6.0` 和 `Xcode 8.0`。
+该项目最低支持 `iOS 11.0` 和 `Xcode 12.0`。
 
 
 已知问题

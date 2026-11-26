@@ -29,8 +29,7 @@
  
  @discussion     It has a better display performance, but costs more memory
                  (width * height * frames Bytes). It only suited to display small 
-                 gif such as animated emoticon. If you want to display large gif,
-                 see `YYImage`.
+                 gif such as animated emoticon. It also supports APNG.
  
  @param data     GIF data.
  

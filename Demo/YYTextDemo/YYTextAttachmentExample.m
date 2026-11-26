@@ -8,7 +8,6 @@
 
 #import "YYTextAttachmentExample.h"
 #import "YYText.h"
-#import "YYImage.h"
 #import "UIImage+YYWebImage.h"
 #import "UIView+YYAdd.h"
 #import "NSBundle+YYAdd.h"
@@ -62,19 +61,16 @@
         for (NSString *name in names) {
             NSString *path = [[NSBundle mainBundle] pathForScaledResource:name ofType:@"gif" inDirectory:@"EmoticonQQ.bundle"];
             NSData *data = [NSData dataWithContentsOfFile:path];
-            YYImage *image = [YYImage imageWithData:data scale:2];
-            image.preloadAllAnimatedImageFrames = YES;
-            YYAnimatedImageView *imageView = [[YYAnimatedImageView alloc] initWithImage:image];
+            UIImage *image = [UIImage yy_imageWithSmallGIFData:data scale:2];
+            UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
             
             NSMutableAttributedString *attachText = [NSMutableAttributedString yy_attachmentStringWithContent:imageView contentMode:UIViewContentModeCenter attachmentSize:imageView.size alignToFont:font alignment:YYTextVerticalAlignmentCenter];
             [text appendAttributedString:attachText];
         }
         
-        YYImage *image = [YYImage imageNamed:@"pia"];
-        image.preloadAllAnimatedImageFrames = YES;
-        YYAnimatedImageView *imageView = [[YYAnimatedImageView alloc] initWithImage:image];
-        imageView.autoPlayAnimatedImage = NO;
-        [imageView startAnimating];
+        NSString *piaPath = [[NSBundle mainBundle] pathForScaledResource:@"pia" ofType:@"png"];
+        UIImage *image = [UIImage yy_imageWithSmallGIFData:[NSData dataWithContentsOfFile:piaPath] scale:2];
+        UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
         
         NSMutableAttributedString *attachText = [NSMutableAttributedString yy_attachmentStringWithContent:imageView contentMode:UIViewContentModeCenter attachmentSize:imageView.size alignToFont:font alignment:YYTextVerticalAlignmentBottom];
         [text appendAttributedString:attachText];

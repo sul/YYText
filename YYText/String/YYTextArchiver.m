@@ -13,38 +13,20 @@
 #import "YYTextRunDelegate.h"
 #import "YYTextRubyAnnotation.h"
 
-/**
- When call CTRunDelegateGetTypeID() on some devices (runs iOS6), I got the error:
- "dyld: lazy symbol binding failed: Symbol not found: _CTRunDelegateGetTypeID"
- 
- Here's a workaround for this issue.
- */
-static CFTypeID CTRunDelegateTypeID() {
+static CFTypeID CTRunDelegateTypeID(void) {
     static CFTypeID typeID;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        /*
-        if ((long)CTRunDelegateGetTypeID + 1 > 1) { //avoid compiler optimization
-            typeID = CTRunDelegateGetTypeID();
-        }
-         */
-        YYTextRunDelegate *delegate = [YYTextRunDelegate new];
-        CTRunDelegateRef ref = delegate.CTRunDelegate;
-        typeID = CFGetTypeID(ref);
-        CFRelease(ref);
+        typeID = CTRunDelegateGetTypeID();
     });
     return typeID;
 }
 
-static CFTypeID CTRubyAnnotationTypeID() {
+static CFTypeID CTRubyAnnotationTypeID(void) {
     static CFTypeID typeID;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        if ((long)CTRubyAnnotationGetTypeID + 1 > 1) { //avoid compiler optimization
-            typeID = CTRunDelegateGetTypeID();
-        } else {
-            typeID = kCFNotFound;
-        }
+        typeID = CTRubyAnnotationGetTypeID();
     });
     return typeID;
 }
@@ -151,11 +133,10 @@ static CFTypeID CTRubyAnnotationTypeID() {
 
 + (NSData *)archivedDataWithRootObject:(id)rootObject {
     if (!rootObject) return nil;
-    NSMutableData *data = [NSMutableData data];
-    YYTextArchiver *archiver = [[[self class] alloc] initForWritingWithMutableData:data];
+    YYTextArchiver *archiver = [[[self class] alloc] initRequiringSecureCoding:NO];
     [archiver encodeRootObject:rootObject];
     [archiver finishEncoding];
-    return data;
+    return archiver.encodedData;
 }
 
 + (BOOL)archiveRootObject:(id)rootObject toFile:(NSString *)path {
@@ -170,11 +151,20 @@ static CFTypeID CTRubyAnnotationTypeID() {
     return self;
 }
 
+- (instancetype)initRequiringSecureCoding:(BOOL)requiresSecureCoding {
+    self = [super initRequiringSecureCoding:requiresSecureCoding];
+    self.delegate = self;
+    return self;
+}
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (instancetype)initForWritingWithMutableData:(NSMutableData *)data {
     self = [super initForWritingWithMutableData:data];
     self.delegate = self;
     return self;
 }
+#pragma clang diagnostic pop
 
 - (id)archiver:(NSKeyedArchiver *)archiver willEncodeObject:(id)object {
     CFTypeID typeID = CFGetTypeID((CFTypeRef)object);
@@ -201,8 +191,12 @@ static CFTypeID CTRubyAnnotationTypeID() {
 
 + (id)unarchiveObjectWithData:(NSData *)data {
     if (data.length == 0) return nil;
-    YYTextUnarchiver *unarchiver = [[self alloc] initForReadingWithData:data];
-    return [unarchiver decodeObject];
+    YYTextUnarchiver *unarchiver = [[self alloc] initForReadingFromData:data error:NULL];
+    if (!unarchiver) return nil;
+    unarchiver.requiresSecureCoding = NO;
+    id object = [unarchiver decodeObject];
+    [unarchiver finishDecoding];
+    return object;
 }
 
 + (id)unarchiveObjectWithFile:(NSString *)path {
@@ -216,11 +210,20 @@ static CFTypeID CTRubyAnnotationTypeID() {
     return self;
 }
 
+- (instancetype)initForReadingFromData:(NSData *)data error:(NSError **)error {
+    self = [super initForReadingFromData:data error:error];
+    self.delegate = self;
+    return self;
+}
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (instancetype)initForReadingWithData:(NSData *)data {
     self = [super initForReadingWithData:data];
     self.delegate = self;
     return self;
 }
+#pragma clang diagnostic pop
 
 - (id)unarchiver:(NSKeyedUnarchiver *)unarchiver didDecodeObject:(id) NS_RELEASES_ARGUMENT object NS_RETURNS_RETAINED {
     if ([object class] == [YYTextRunDelegate class]) {
@@ -231,14 +234,10 @@ static CFTypeID CTRubyAnnotationTypeID() {
         return ctObj;
     } else if ([object class] == [YYTextRubyAnnotation class]) {
         YYTextRubyAnnotation *ruby = object;
-        if ([UIDevice currentDevice].systemVersion.floatValue >= 8) {
-            CTRubyAnnotationRef ct = ruby.CTRubyAnnotation;
-            id ctObj = (__bridge id)(ct);
-            if (ct) CFRelease(ct);
-            return ctObj;
-        } else {
-            return object;
-        }
+        CTRubyAnnotationRef ct = ruby.CTRubyAnnotation;
+        id ctObj = (__bridge id)(ct);
+        if (ct) CFRelease(ct);
+        return ctObj;
     } else if ([object class] == [_YYCGColor class]) {
         _YYCGColor *color = object;
         return (id)color.CGColor;

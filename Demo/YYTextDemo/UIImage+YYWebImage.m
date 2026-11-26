@@ -119,6 +119,14 @@ static NSTimeInterval _yy_CGImageSourceGetGIFFrameDelayAtIndex(CGImageSourceRef 
             }
             delay = num.doubleValue;
         }
+        CFDictionaryRef dicPNG = CFDictionaryGetValue(dic, kCGImagePropertyPNGDictionary);
+        if (dicPNG) {
+            NSNumber *num = CFDictionaryGetValue(dicPNG, kCGImagePropertyAPNGUnclampedDelayTime);
+            if (num.doubleValue <= __FLT_EPSILON__) {
+                num = CFDictionaryGetValue(dicPNG, kCGImagePropertyAPNGDelayTime);
+            }
+            delay = num.doubleValue;
+        }
         CFRelease(dic);
     }
     

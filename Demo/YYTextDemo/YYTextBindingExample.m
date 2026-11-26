@@ -8,7 +8,6 @@
 
 #import "YYTextBindingExample.h"
 #import "YYText.h"
-#import "YYImage.h"
 #import "UIImage+YYWebImage.h"
 #import "UIView+YYAdd.h"
 #import "NSBundle+YYAdd.h"

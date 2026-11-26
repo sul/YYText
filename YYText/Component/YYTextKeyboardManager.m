@@ -90,7 +90,6 @@ static int _YYTextKeyboardViewFrameObserverKey;
     
     CGRect _fromFrame;
     BOOL _fromVisible;
-    UIInterfaceOrientation _fromOrientation;
     
     CGRect _notificationFromFrame;
     CGRect _notificationToFrame;
@@ -116,13 +115,11 @@ static int _YYTextKeyboardViewFrameObserverKey;
                                              selector:@selector(_keyboardFrameWillChangeNotification:)
                                                  name:UIKeyboardWillChangeFrameNotification
                                                object:nil];
-    // for iPad (iOS 9)
-    if ([UIDevice currentDevice].systemVersion.floatValue >= 9) {
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(_keyboardFrameDidChangeNotification:)
-                                                     name:UIKeyboardDidChangeFrameNotification
-                                                   object:nil];
-    }
+    // for iPad
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_keyboardFrameDidChangeNotification:)
+                                                 name:UIKeyboardDidChangeFrameNotification
+                                               object:nil];
     return self;
 }
 
@@ -179,28 +176,18 @@ static int _YYTextKeyboardViewFrameObserverKey;
     for (window in app.windows) {
         if ([self _getKeyboardViewFromWindow:window]) return window;
     }
-    window = app.keyWindow;
+    window = YYTextKeyWindow();
     if ([self _getKeyboardViewFromWindow:window]) return window;
     
     NSMutableArray *kbWindows = nil;
     for (window in app.windows) {
         NSString *windowName = NSStringFromClass(window.class);
-        if ([self _systemVersion] < 9) {
-            // UITextEffectsWindow
-            if (windowName.length == 19 &&
-                [windowName hasPrefix:@"UI"] &&
-                [windowName hasSuffix:@"TextEffectsWindow"]) {
-                if (!kbWindows) kbWindows = [NSMutableArray new];
-                [kbWindows addObject:window];
-            }
-        } else {
-            // UIRemoteKeyboardWindow
-            if (windowName.length == 22 &&
-                [windowName hasPrefix:@"UI"] &&
-                [windowName hasSuffix:@"RemoteKeyboardWindow"]) {
-                if (!kbWindows) kbWindows = [NSMutableArray new];
-                [kbWindows addObject:window];
-            }
+        // UIRemoteKeyboardWindow
+        if (windowName.length == 22 &&
+            [windowName hasPrefix:@"UI"] &&
+            [windowName hasSuffix:@"RemoteKeyboardWindow"]) {
+            if (!kbWindows) kbWindows = [NSMutableArray new];
+            [kbWindows addObject:window];
         }
     }
     
@@ -220,7 +207,7 @@ static int _YYTextKeyboardViewFrameObserverKey;
         view = [self _getKeyboardViewFromWindow:window];
         if (view) return view;
     }
-    window = app.keyWindow;
+    window = YYTextKeyWindow();
     view = [self _getKeyboardViewFromWindow:window];
     if (view) return view;
     return nil;
@@ -253,27 +240,8 @@ static int _YYTextKeyboardViewFrameObserverKey;
 
 #pragma mark - private
 
-- (double)_systemVersion {
-    static double v;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        v = [UIDevice currentDevice].systemVersion.doubleValue;
-    });
-    return v;
-}
-
 - (UIView *)_getKeyboardViewFromWindow:(UIWindow *)window {
     /*
-     iOS 6/7:
-     UITextEffectsWindow
-        UIPeripheralHostView << keyboard
-     
-     iOS 8:
-     UITextEffectsWindow
-        UIInputSetContainerView
-            UIInputSetHostView << keyboard
-     
-     iOS 9:
      UIRemoteKeyboardWindow
         UIInputSetContainerView
             UIInputSetHostView << keyboard
@@ -282,43 +250,25 @@ static int _YYTextKeyboardViewFrameObserverKey;
     
     // Get the window
     NSString *windowName = NSStringFromClass(window.class);
-    if ([self _systemVersion] < 9) {
-        // UITextEffectsWindow
-        if (windowName.length != 19) return nil;
-        if (![windowName hasPrefix:@"UI"]) return nil;
-        if (![windowName hasSuffix:@"TextEffectsWindow"]) return nil;
-    } else {
-        // UIRemoteKeyboardWindow
-        if (windowName.length != 22) return nil;
-        if (![windowName hasPrefix:@"UI"]) return nil;
-        if (![windowName hasSuffix:@"RemoteKeyboardWindow"]) return nil;
-    }
+    // UIRemoteKeyboardWindow
+    if (windowName.length != 22) return nil;
+    if (![windowName hasPrefix:@"UI"]) return nil;
+    if (![windowName hasSuffix:@"RemoteKeyboardWindow"]) return nil;
     
     // Get the view
-    if ([self _systemVersion] < 8) {
-        // UIPeripheralHostView
-        for (UIView *view in window.subviews) {
-            NSString *viewName = NSStringFromClass(view.class);
-            if (viewName.length != 20) continue;
-            if (![viewName hasPrefix:@"UI"]) continue;
-            if (![viewName hasSuffix:@"PeripheralHostView"]) continue;
-            return view;
-        }
-    } else {
-        // UIInputSetContainerView
-        for (UIView *view in window.subviews) {
-            NSString *viewName = NSStringFromClass(view.class);
-            if (viewName.length != 23) continue;
-            if (![viewName hasPrefix:@"UI"]) continue;
-            if (![viewName hasSuffix:@"InputSetContainerView"]) continue;
-            // UIInputSetHostView
-            for (UIView *subView in view.subviews) {
-                NSString *subViewName = NSStringFromClass(subView.class);
-                if (subViewName.length != 18) continue;
-                if (![subViewName hasPrefix:@"UI"]) continue;
-                if (![subViewName hasSuffix:@"InputSetHostView"]) continue;
-                return subView;
-            }
+    // UIInputSetContainerView
+    for (UIView *view in window.subviews) {
+        NSString *viewName = NSStringFromClass(view.class);
+        if (viewName.length != 23) continue;
+        if (![viewName hasPrefix:@"UI"]) continue;
+        if (![viewName hasSuffix:@"InputSetContainerView"]) continue;
+        // UIInputSetHostView
+        for (UIView *subView in view.subviews) {
+            NSString *subViewName = NSStringFromClass(subView.class);
+            if (subViewName.length != 18) continue;
+            if (![subViewName hasPrefix:@"UI"]) continue;
+            if (![subViewName hasSuffix:@"InputSetHostView"]) continue;
+            return subView;
         }
     }
     
@@ -406,7 +356,7 @@ static int _YYTextKeyboardViewFrameObserverKey;
     UIView *keyboard = self.keyboardView;
     UIWindow *window = keyboard.window;
     if (!window) {
-        window = app.keyWindow;
+        window = YYTextKeyWindow();
     }
     if (!window) {
         window = app.windows.firstObject;
@@ -430,36 +380,6 @@ static int _YYTextKeyboardViewFrameObserverKey;
         trans.animationDuration = _notificationDuration;
         trans.animationCurve = _notificationCurve;
         trans.animationOption = _notificationCurve << 16;
-        
-        // Fix iPad(iOS7) keyboard frame error after rorate device when the keyboard is not docked to bottom.
-        if (((int)[self _systemVersion]) == 7) {
-            UIInterfaceOrientation ori = app.statusBarOrientation;
-            if (_fromOrientation != UIInterfaceOrientationUnknown && _fromOrientation != ori) {
-                switch (ori) {
-                    case UIInterfaceOrientationPortrait: {
-                        if (CGRectGetMaxY(trans.toFrame) != window.frame.size.height) {
-                            trans.toFrame.origin.y -= trans.toFrame.size.height;
-                        }
-                    } break;
-                    case UIInterfaceOrientationPortraitUpsideDown: {
-                        if (CGRectGetMinY(trans.toFrame) != 0) {
-                            trans.toFrame.origin.y += trans.toFrame.size.height;
-                        }
-                    } break;
-                    case UIInterfaceOrientationLandscapeLeft: {
-                        if (CGRectGetMaxX(trans.toFrame) != window.frame.size.width) {
-                            trans.toFrame.origin.x -= trans.toFrame.size.width;
-                        }
-                    } break;
-                    case UIInterfaceOrientationLandscapeRight: {
-                        if (CGRectGetMinX(trans.toFrame) != 0) {
-                            trans.toFrame.origin.x += trans.toFrame.size.width;
-                        }
-                    } break;
-                    default: break;
-                }
-            }
-        }
     } else {
         trans.toFrame = _observedToFrame;
     }
@@ -483,7 +403,6 @@ static int _YYTextKeyboardViewFrameObserverKey;
     _hasObservedChange = NO;
     _fromFrame = trans.toFrame;
     _fromVisible = trans.toVisible;
-    _fromOrientation = app.statusBarOrientation;
 }
 
 - (CGRect)convertRect:(CGRect)rect toView:(UIView *)view {
@@ -493,11 +412,11 @@ static int _YYTextKeyboardViewFrameObserverKey;
     if (CGRectIsNull(rect)) return rect;
     if (CGRectIsInfinite(rect)) return rect;
     
-    UIWindow *mainWindow = app.keyWindow;
+    UIWindow *mainWindow = YYTextKeyWindow();
     if (!mainWindow) mainWindow = app.windows.firstObject;
     if (!mainWindow) { // no window ?!
         if (view) {
-            [view convertRect:rect fromView:nil];
+            return [view convertRect:rect fromView:nil];
         } else {
             return rect;
         }

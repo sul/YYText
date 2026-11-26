@@ -8,7 +8,6 @@
 
 #import "YYTextEmoticonExample.h"
 #import "YYText.h"
-#import "YYImage.h"
 #import "UIImage+YYWebImage.h"
 #import "UIView+YYAdd.h"
 #import "NSBundle+YYAdd.h"
@@ -66,9 +65,7 @@
     NSBundle *bundle = [NSBundle bundleWithPath:[[NSBundle mainBundle] pathForResource:@"EmoticonQQ" ofType:@"bundle"]];
     NSString *path = [bundle pathForScaledResource:name ofType:@"gif"];
     NSData *data = [NSData dataWithContentsOfFile:path];
-    YYImage *image = [YYImage imageWithData:data scale:2];
-    image.preloadAllAnimatedImageFrames = YES;
-    return image;
+    return [UIImage yy_imageWithSmallGIFData:data scale:2];
 }
 
 - (void)edit:(UIBarButtonItem *)item {

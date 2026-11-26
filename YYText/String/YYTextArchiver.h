@@ -20,6 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
  CGColor/CGImage/CTRunDelegateRef/.. (such as NSAttributedString).
  */
 @interface YYTextArchiver : NSKeyedArchiver <NSKeyedArchiverDelegate>
++ (NSData *)archivedDataWithRootObject:(id)rootObject;
++ (BOOL)archiveRootObject:(id)rootObject toFile:(NSString *)path;
 @end
 
 /**
@@ -28,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
  `YYTextArchiver` or `NSKeyedArchiver`.
  */
 @interface YYTextUnarchiver : NSKeyedUnarchiver <NSKeyedUnarchiverDelegate>
++ (nullable id)unarchiveObjectWithData:(NSData *)data;
++ (nullable id)unarchiveObjectWithFile:(NSString *)path;
 @end
 
 NS_ASSUME_NONNULL_END
