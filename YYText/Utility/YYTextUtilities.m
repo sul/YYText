@@ -330,3 +330,20 @@ UIWindow *YYTextKeyWindow(void) {
     return app.keyWindow;
 #pragma clang diagnostic pop
 }
+
+NSArray<UIWindow *> *YYTextWindows(void) {
+    UIApplication *app = YYTextSharedApplication();
+    if (!app) return @[];
+    if (@available(iOS 13.0, *)) {
+        NSMutableArray<UIWindow *> *windows = [NSMutableArray new];
+        for (UIScene *scene in app.connectedScenes) {
+            if (![scene isKindOfClass:[UIWindowScene class]]) continue;
+            [windows addObjectsFromArray:((UIWindowScene *)scene).windows];
+        }
+        if (windows.count > 0) return windows;
+    }
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    return app.windows ?: @[];
+#pragma clang diagnostic pop
+}

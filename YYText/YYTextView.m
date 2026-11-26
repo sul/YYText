@@ -1569,9 +1569,8 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
 /// Returns the `root` view controller (returns nil if not found).
 - (UIViewController *)_getRootViewController {
     UIViewController *ctrl = nil;
-    UIApplication *app = YYTextSharedApplication();
     if (!ctrl) ctrl = YYTextKeyWindow().rootViewController;
-    if (!ctrl) ctrl = [app.windows.firstObject rootViewController];
+    if (!ctrl) ctrl = [YYTextWindows().firstObject rootViewController];
     if (!ctrl) ctrl = self.yy_viewController;
     if (!ctrl) return nil;
     
@@ -3392,10 +3391,10 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
     _lastTypeRange = _selectedTextRange.asRange;
 }
 
-- (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(YYTextRange *)range {
+- (void)setBaseWritingDirection:(NSWritingDirection)writingDirection forRange:(YYTextRange *)range {
     if (!range) return;
     range = [self _correctedTextRange:range];
-    [_innerText yy_setBaseWritingDirection:(NSWritingDirection)writingDirection range:range.asRange];
+    [_innerText yy_setBaseWritingDirection:writingDirection range:range.asRange];
     [self _commitUpdate];
 }
 
@@ -3405,11 +3404,11 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
     return [_innerText.string substringWithRange:range.asRange];
 }
 
-- (UITextWritingDirection)baseWritingDirectionForPosition:(YYTextPosition *)position inDirection:(UITextStorageDirection)direction {
+- (NSWritingDirection)baseWritingDirectionForPosition:(YYTextPosition *)position inDirection:(UITextStorageDirection)direction {
     [self _updateIfNeeded];
     position = [self _correctedTextPosition:position];
-    if (!position) return UITextWritingDirectionNatural;
-    if (_innerText.length == 0) return UITextWritingDirectionNatural;
+    if (!position) return NSWritingDirectionNatural;
+    if (_innerText.length == 0) return NSWritingDirectionNatural;
     NSUInteger idx = position.offset;
     if (idx == _innerText.length) idx--;
     
@@ -3418,11 +3417,11 @@ typedef NS_ENUM(NSUInteger, YYTextMoveDirection) {
     if (paraStyle) {
         CTWritingDirection baseWritingDirection;
         if (CTParagraphStyleGetValueForSpecifier(paraStyle, kCTParagraphStyleSpecifierBaseWritingDirection, sizeof(CTWritingDirection), &baseWritingDirection)) {
-            return (UITextWritingDirection)baseWritingDirection;
+            return (NSWritingDirection)baseWritingDirection;
         }
     }
     
-    return UITextWritingDirectionNatural;
+    return NSWritingDirectionNatural;
 }
 
 - (YYTextPosition *)beginningOfDocument {

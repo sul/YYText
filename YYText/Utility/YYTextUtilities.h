@@ -560,4 +560,7 @@ UIApplication * _Nullable YYTextSharedApplication(void);
 /// Returns the key window of the foreground active scene (iOS 13+), or the app's key window. Returns nil in App Extension.
 UIWindow * _Nullable YYTextKeyWindow(void);
 
+/// Returns all windows across connected window scenes (iOS 13+), or the app's windows. Returns empty array in App Extension.
+NSArray<UIWindow *> *YYTextWindows(void);
+
 NS_ASSUME_NONNULL_END

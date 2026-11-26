@@ -172,15 +172,16 @@ static int _YYTextKeyboardViewFrameObserverKey;
     UIApplication *app = YYTextSharedApplication();
     if (!app) return nil;
     
+    NSArray<UIWindow *> *windows = YYTextWindows();
     UIWindow *window = nil;
-    for (window in app.windows) {
+    for (window in windows) {
         if ([self _getKeyboardViewFromWindow:window]) return window;
     }
     window = YYTextKeyWindow();
     if ([self _getKeyboardViewFromWindow:window]) return window;
     
     NSMutableArray *kbWindows = nil;
-    for (window in app.windows) {
+    for (window in windows) {
         NSString *windowName = NSStringFromClass(window.class);
         // UIRemoteKeyboardWindow
         if (windowName.length == 22 &&
@@ -203,7 +204,7 @@ static int _YYTextKeyboardViewFrameObserverKey;
     
     UIWindow *window = nil;
     UIView *view = nil;
-    for (window in app.windows) {
+    for (window in YYTextWindows()) {
         view = [self _getKeyboardViewFromWindow:window];
         if (view) return view;
     }
@@ -359,7 +360,7 @@ static int _YYTextKeyboardViewFrameObserverKey;
         window = YYTextKeyWindow();
     }
     if (!window) {
-        window = app.windows.firstObject;
+        window = YYTextWindows().firstObject;
     }
     
     YYTextKeyboardTransition trans = {0};
@@ -413,7 +414,7 @@ static int _YYTextKeyboardViewFrameObserverKey;
     if (CGRectIsInfinite(rect)) return rect;
     
     UIWindow *mainWindow = YYTextKeyWindow();
-    if (!mainWindow) mainWindow = app.windows.firstObject;
+    if (!mainWindow) mainWindow = YYTextWindows().firstObject;
     if (!mainWindow) { // no window ?!
         if (view) {
             return [view convertRect:rect fromView:nil];

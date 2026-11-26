@@ -72,7 +72,7 @@
     if (@available(iOS 13.0, *)) {
         if (self.windowScene) return self.windowScene.windows;
     }
-    return YYTextSharedApplication().windows;
+    return YYTextWindows();
 }
 
 // stop self from becoming the KeyWindow
