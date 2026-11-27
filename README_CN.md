@@ -1,6 +1,7 @@
 YYText
 ==============
 [![License MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](LICENSE)&nbsp;
+[![CI](https://github.com/sul/YYText/actions/workflows/ci.yml/badge.svg)](https://github.com/sul/YYText/actions/workflows/ci.yml)&nbsp;
 [![Version](https://img.shields.io/badge/version-2.0.0-blue.svg?style=flat)](https://github.com/sul/YYText/releases)&nbsp;
 [![Platform](https://img.shields.io/badge/platform-iOS%2011.0%2B-blue.svg?style=flat)](https://www.apple.com/ios/)&nbsp;
 [![SPM compatible](https://img.shields.io/badge/SPM-compatible-4BC51D.svg?style=flat)](https://swift.org/package-manager/)&nbsp;
