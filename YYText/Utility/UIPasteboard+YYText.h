@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSData *yy_PNGData;    ///< PNG file data
 @property (nullable, nonatomic, copy) NSData *yy_JPEGData;   ///< JPEG file data
 @property (nullable, nonatomic, copy) NSData *yy_GIFData;    ///< GIF file data
-@property (nullable, nonatomic, copy) NSData *yy_WEBPData;   ///< WebP file data
 @property (nullable, nonatomic, copy) NSData *yy_ImageData;  ///< image file data
 
 /// Attributed string,
@@ -34,8 +33,5 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// The name identifying the attributed string in pasteboard.
 UIKIT_EXTERN NSString *const YYTextPasteboardTypeAttributedString;
-
-/// The UTI Type identifying WebP data in pasteboard.
-UIKIT_EXTERN NSString *const YYTextUTTypeWEBP;
 
 NS_ASSUME_NONNULL_END

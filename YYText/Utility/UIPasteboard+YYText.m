@@ -19,7 +19,6 @@
 
 
 NSString *const YYTextPasteboardTypeAttributedString = @"com.ibireme.NSAttributedString";
-NSString *const YYTextUTTypeWEBP = @"com.google.webp";
 
 static NSString *const YYTextUTTypePNG = @"public.png";
 static NSString *const YYTextUTTypeJPEG = @"public.jpeg";
@@ -51,14 +50,6 @@ static NSString *const YYTextUTTypeImage = @"public.image";
 
 - (NSData *)yy_GIFData {
     return [self dataForPasteboardType:YYTextUTTypeGIF];
-}
-
-- (void)setYy_WEBPData:(NSData *)WEBPData {
-    [self setData:WEBPData forPasteboardType:YYTextUTTypeWEBP];
-}
-
-- (NSData *)yy_WEBPData {
-    return [self dataForPasteboardType:YYTextUTTypeWEBP];
 }
 
 - (void)setYy_ImageData:(NSData *)imageData {
